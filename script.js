@@ -1,40 +1,56 @@
-const div = document.querySelector('div');
+'use strict';
 
-div.onmousedown = function(event) {
-	if(event.target.tagName != 'IMG') return;
+let OffsetX;
+let OffsetY;
 
-	drag(event);
+const imgContainer = document.getElementById('container');
+
+const imgs = imgContainer.getElementsByTagName('img');
+
+for(let i = imgs.length-1; i > -1; i--) {
+	const initialLeft = imgs[i].offsetLeft;
+	const initialTop = imgs[i].offsetTop;
+	imgs[i].style.position = 'absolute';
+	imgs[i].style.left = initialLeft + 'px';
+	imgs[i].style.top = initialTop + 'px';
+	imgs[i].addEventListener('mousedown', OnMouseDown, false);
 }
 
-function drag(event) {
-	let target = event.target;
-	target.style.position = 'relative';
+function OnMouseDown(event) {
+	const EO = event || window.event;
+	EO.preventDefault();
+	const target = EO.target;
 
-	// координаты верхнего угла перетаскиваемого элемента
-	let offsetX = target.style.left;
-	let offsetY = target.style.top;
+	const mouseX = EO.pageX;
+	const mouseY = EO.pageY;
 
-	// координаты клика мышки
-	let startX = event.pageX;
-	let startY = event.pageY;
+	OffsetX = mouseX - target.offsetLeft;
+	OffsetY = mouseY - target.offsetTop;
 
-	target.ondragstart =  function() {
-		return false;
-	}
+	window.addEventListener('mousemove', OnMouseMove, false);
+	window.addEventListener('mouseup', OnMouseUp, false);
+	window.addEventListener('mouseout', OnMouseUp, false);
+}
 
-	div.onmousemove = function(e) {
-		moveAt(e);
-	}
+function OnMouseMove(event) {
+	const EO = event || window.event;
+	EO.preventDefault();
+	const target = EO.target;
 
-	function moveAt(e) {
-		target.style.left = offsetX + e.pageX - startX + 'px';
-		target.style.top = offsetY + e.pageY - startY + 'px';
-	}
+	target.style.zIndex = 999;
 
-	target.onmouseup = function(e) {
-		div.onmousemove = null;
-		target.onmouseup = null;
-		target.ondragstart = null;
-		target = null;
-	}
+	target.style.left = EO.pageX - OffsetX + 'px';
+	target.style.top = EO.pageY - OffsetY + 'px';
+}
+
+function OnMouseUp(event) {
+	const EO = event || window.event;
+	EO.preventDefault();
+	const target = EO.target;
+
+	target.style.zIndex = 1;	
+
+	window.removeEventListener('mousemove', OnMouseMove, false);
+	window.removeEventListener('mouseup', OnMouseUp, false);
+	window.removeEventListener('mouseout', OnMouseUp, false);
 }
